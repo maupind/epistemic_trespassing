@@ -4,15 +4,15 @@ format: html
 editor: visual
 ---
 
-
 ```{r}
 library(tidyverse)
 library(poLCA)
 library(dplyr)
 library(psych)
 library(gtools)
+library(dunn.test)
+library(nnet)
 ```
-
 
 ```{r}
 set.seed(123)
@@ -26,7 +26,44 @@ alpha_risk <- rep(0.5, 9)
 alpha_eleven <- rep(0.5, 11)
 
 probs_stages <- rdirichlet(1, alpha_stages)
-probs_stages_accuracy <- rdirichlet(1, alpha_stages)
+#### accuracy variables ####
+brainstorm_accuracy <- rdirichlet(1, alpha_compare)
+review_accuracy <- rdirichlet(1, alpha_compare)
+design_accuracy <- rdirichlet(1, alpha_compare)
+data_management_accuracy <- rdirichlet(1, alpha_compare)
+ethics_accuracy <- rdirichlet(1, alpha_compare)
+grant_accuracy <- rdirichlet(1, alpha_compare)
+analysis_accuracy <- rdirichlet(1, alpha_compare)
+visualisation_accuracy <- rdirichlet(1, alpha_compare)
+draft_accuracy <- rdirichlet(1, alpha_compare)
+writing_accuracy <- rdirichlet(1, alpha_compare)
+editing_accuracy <- rdirichlet(1, alpha_compare)
+translation_accuracy <- rdirichlet(1, alpha_compare)
+summary_accuracy <- rdirichlet(1, alpha_compare)
+admin_accuracy <- rdirichlet(1, alpha_compare)
+impact_accuracy <- rdirichlet(1, alpha_compare)
+commercilisation_accuracy <- rdirichlet(1, alpha_compare)
+other_accuracy <- rdirichlet(1, alpha_compare)
+
+##### usefulness variables#######
+brainstorm_useful <- rdirichlet(1, alpha_compare)
+review_useful <- rdirichlet(1, alpha_compare)
+design_useful <- rdirichlet(1, alpha_compare)
+data_management_useful <- rdirichlet(1, alpha_compare)
+ethics_useful <- rdirichlet(1, alpha_compare)
+grant_useful <- rdirichlet(1, alpha_compare)
+analysis_useful <- rdirichlet(1, alpha_compare)
+visualisation_useful <- rdirichlet(1, alpha_compare)
+draft_useful <- rdirichlet(1, alpha_compare)
+writing_useful <- rdirichlet(1, alpha_compare)
+editing_useful <- rdirichlet(1, alpha_compare)
+translation_useful <- rdirichlet(1, alpha_compare)
+summary_useful <- rdirichlet(1, alpha_compare)
+admin_useful <- rdirichlet(1, alpha_compare)
+impact_useful <- rdirichlet(1, alpha_compare)
+commercilisation_useful <- rdirichlet(1, alpha_compare)
+other_useful <- rdirichlet(1, alpha_compare)
+
 probs_stages_useful <- rdirichlet(1, alpha_stages)
 probs_mental <- rdirichlet(1, alpha_compare)
 probs_time <- rdirichlet(1, alpha_compare)
@@ -34,8 +71,44 @@ probs_effort <- rdirichlet(1, alpha_compare)
 probs_stress <- rdirichlet(1, alpha_compare)
 probs_trespass <- rdirichlet(1, alpha_trespass)
 probs_trespass_stages <- rdirichlet(1, alpha_stages)
-probs_trespass_stages_accuracy <- rdirichlet(1, alpha_stages)
-probs_trespass_stages_useful <- rdirichlet(1, alpha_stages)
+
+#### trespass accuracy variables ####
+brainstorm_trespass_accuracy <- rdirichlet(1, alpha_compare)
+review_trespass_accuracy <- rdirichlet(1, alpha_compare)
+design_trespass_accuracy <- rdirichlet(1, alpha_compare)
+data_management_trespass_accuracy <- rdirichlet(1, alpha_compare)
+ethics_trespass_accuracy <- rdirichlet(1, alpha_compare)
+grant_trespass_accuracy <- rdirichlet(1, alpha_compare)
+analysis_trespass_accuracy <- rdirichlet(1, alpha_compare)
+visualisation_trespass_accuracy <- rdirichlet(1, alpha_compare)
+draft_trespass_accuracy <- rdirichlet(1, alpha_compare)
+writing_trespass_accuracy <- rdirichlet(1, alpha_compare)
+editing_trespass_accuracy <- rdirichlet(1, alpha_compare)
+translation_trespass_accuracy <- rdirichlet(1, alpha_compare)
+summary_trespass_accuracy <- rdirichlet(1, alpha_compare)
+admin_trespass_accuracy <- rdirichlet(1, alpha_compare)
+impact_trespass_accuracy <- rdirichlet(1, alpha_compare)
+commercilisation_trespass_accuracy <- rdirichlet(1, alpha_compare)
+other_trespass_accuracy <- rdirichlet(1, alpha_compare)
+
+##### trespass usefulness variables#######
+brainstorm_trespass_useful <- rdirichlet(1, alpha_compare)
+review_trespass_useful <- rdirichlet(1, alpha_compare)
+design_trespass_useful <- rdirichlet(1, alpha_compare)
+data_management_trespass_useful <- rdirichlet(1, alpha_compare)
+ethics_trespass_useful <- rdirichlet(1, alpha_compare)
+grant_trespass_useful <- rdirichlet(1, alpha_compare)
+analysis_trespass_useful <- rdirichlet(1, alpha_compare)
+visualisation_trespass_useful <- rdirichlet(1, alpha_compare)
+draft_trespass_useful <- rdirichlet(1, alpha_compare)
+writing_trespass_useful <- rdirichlet(1, alpha_compare)
+editing_trespass_useful <- rdirichlet(1, alpha_compare)
+translation_trespass_useful <- rdirichlet(1, alpha_compare)
+summary_trespass_useful <- rdirichlet(1, alpha_compare)
+admin_trespass_useful <- rdirichlet(1, alpha_compare)
+impact_trespass_useful <- rdirichlet(1, alpha_compare)
+commercilisation_trespass_useful <- rdirichlet(1, alpha_compare)
+other_trespass_useful <- rdirichlet(1, alpha_compare)
 probs_benefits <- rdirichlet(1, alpha_benefits)
 probs_risk <- rdirichlet(1, alpha_risk)
 
@@ -112,8 +185,42 @@ sim_data <- data.frame(
                        prob = c(20, 15, 12.5, 12.5, 20, 20)),
   ############
   stages = sample(1:18, n, replace = TRUE, prob = probs_stages),
-  stage_accuracy = sample(1:18, n, replace = TRUE, prob = probs_stages_accuracy),
-  stage_useful = sample(1:18, n, replace = TRUE, prob = probs_stages_useful),
+brainstorm_accuracy = sample(1:5, n, replace = TRUE, prob = brainstorm_accuracy),
+  review_accuracy = sample(1:5, n, replace = TRUE, prob = review_accuracy),
+  design_accuracy = sample(1:5, n, replace = TRUE, prob = design_accuracy),
+  data_management_accuracy = sample(1:5, n, replace = TRUE, prob = data_management_accuracy),
+  ethics_accuracy = sample(1:5, n, replace = TRUE, prob = ethics_accuracy),
+  grant_accuracy = sample(1:5, n, replace = TRUE, prob = grant_accuracy),
+  analysis_accuracy = sample(1:5, n, replace = TRUE, prob = analysis_accuracy),
+  visualisation_accuracy = sample(1:5, n, replace = TRUE, prob = visualisation_accuracy),
+  draft_accuracy = sample(1:5, n, replace = TRUE, prob = draft_accuracy),
+  writing_accuracy = sample(1:5, n, replace = TRUE, prob = writing_accuracy),
+  editing_accuracy = sample(1:5, n, replace = TRUE, prob = editing_accuracy),
+  translation_accuracy = sample(1:5, n, replace = TRUE, prob = translation_accuracy),
+  summary_accuracy = sample(1:5, n, replace = TRUE, prob = summary_accuracy),
+  admin_accuracy = sample(1:5, n, replace = TRUE, prob = admin_accuracy),
+  impact_accuracy = sample(1:5, n, replace = TRUE, prob = impact_accuracy),
+  commercilisation_accuracy = sample(1:5, n, replace = TRUE, prob = commercilisation_accuracy),
+  other_accuracy = sample(1:5, n, replace = TRUE, prob = other_accuracy),
+#########
+  brainstorm_useful = sample(1:5, n, replace = TRUE, prob = brainstorm_useful),
+  review_useful = sample(1:5, n, replace = TRUE, prob = review_useful),
+  design_useful = sample(1:5, n, replace = TRUE, prob = design_useful),
+  data_management_useful = sample(1:5, n, replace = TRUE, prob = data_management_useful),
+  ethics_useful = sample(1:5, n, replace = TRUE, prob = ethics_useful),
+  grant_useful = sample(1:5, n, replace = TRUE, prob = grant_useful),
+  analysis_useful = sample(1:5, n, replace = TRUE, prob = analysis_useful),
+  visualisation_useful = sample(1:5, n, replace = TRUE, prob = visualisation_useful),
+  draft_useful = sample(1:5, n, replace = TRUE, prob = draft_useful),
+  writing_useful = sample(1:5, n, replace = TRUE, prob = writing_useful),
+  editing_useful = sample(1:5, n, replace = TRUE, prob = editing_useful),
+  translation_useful = sample(1:5, n, replace = TRUE, prob = translation_useful),
+  summary_useful = sample(1:5, n, replace = TRUE, prob = summary_useful),
+  admin_useful = sample(1:5, n, replace = TRUE, prob = admin_useful),
+  impact_useful = sample(1:5, n, replace = TRUE, prob = impact_useful),
+  commercilisation_useful = sample(1:5, n, replace = TRUE, prob = commercilisation_useful),
+  other_useful = sample(1:5, n, replace = TRUE, prob = other_useful),
+  #########
   ############
   mental = sample(1:5, n, replace = TRUE, prob = probs_mental),
   time = sample(1:5, n, replace = TRUE, prob = probs_time),
@@ -122,8 +229,41 @@ sim_data <- data.frame(
   ###########
   trespass = sample(1:3, n, replace = TRUE, prob = probs_trespass),
   trespass_stages = sample(1:18, n, replace = TRUE, prob = probs_trespass_stages),
-  trespass_stage_accuracy = sample(1:18, n, replace = TRUE, prob = probs_trespass_stages_accuracy),
-  trespass_stage_useful = sample(1:18, n, replace = TRUE, prob = probs_trespass_stages_useful),
+  brainstorm_trespass_accuracy = sample(1:5, n, replace = TRUE, prob = brainstorm_trespass_accuracy),
+  review_trespass_accuracy = sample(1:5, n, replace = TRUE, prob = review_trespass_accuracy),
+  design_trespass_accuracy = sample(1:5, n, replace = TRUE, prob = design_trespass_accuracy),
+  data_management_trespass_accuracy = sample(1:5, n, replace = TRUE, prob = data_management_trespass_accuracy),
+  ethics_trespass_accuracy = sample(1:5, n, replace = TRUE, prob = ethics_trespass_accuracy),
+  grant_trespass_accuracy = sample(1:5, n, replace = TRUE, prob = grant_trespass_accuracy),
+  analysis_trespass_accuracy = sample(1:5, n, replace = TRUE, prob = analysis_trespass_accuracy),
+  visualisation_trespass_accuracy = sample(1:5, n, replace = TRUE, prob = visualisation_trespass_accuracy),
+  draft_trespass_accuracy = sample(1:5, n, replace = TRUE, prob = draft_trespass_accuracy),
+  writing_trespass_accuracy = sample(1:5, n, replace = TRUE, prob = writing_trespass_accuracy),
+  editing_trespass_accuracy = sample(1:5, n, replace = TRUE, prob = editing_trespass_accuracy),
+  translation_trespass_accuracy = sample(1:5, n, replace = TRUE, prob = translation_trespass_accuracy),
+  summary_trespass_accuracy = sample(1:5, n, replace = TRUE, prob = summary_trespass_accuracy),
+  admin_trespass_accuracy = sample(1:5, n, replace = TRUE, prob = admin_trespass_accuracy),
+  impact_trespass_accuracy = sample(1:5, n, replace = TRUE, prob = impact_trespass_accuracy),
+  commercilisation_trespass_accuracy = sample(1:5, n, replace = TRUE, prob = commercilisation_trespass_accuracy),
+  other_trespass_accuracy = sample(1:5, n, replace = TRUE, prob = other_trespass_accuracy),
+#########
+  brainstorm_trespass_useful = sample(1:5, n, replace = TRUE, prob = brainstorm_trespass_useful),
+  review_trespass_useful = sample(1:5, n, replace = TRUE, prob = review_trespass_useful),
+  design_trespass_useful = sample(1:5, n, replace = TRUE, prob = design_trespass_useful),
+  data_management_trespass_useful = sample(1:5, n, replace = TRUE, prob = data_management_trespass_useful),
+  ethics_trespass_useful = sample(1:5, n, replace = TRUE, prob = ethics_trespass_useful),
+  grant_trespass_useful = sample(1:5, n, replace = TRUE, prob = grant_trespass_useful),
+  analysis_trespass_useful = sample(1:5, n, replace = TRUE, prob = analysis_trespass_useful),
+  visualisation_trespass_useful = sample(1:5, n, replace = TRUE, prob = visualisation_trespass_useful),
+  draft_trespass_useful = sample(1:5, n, replace = TRUE, prob = draft_trespass_useful),
+  writing_trespass_useful = sample(1:5, n, replace = TRUE, prob = writing_trespass_useful),
+  editing_trespass_useful = sample(1:5, n, replace = TRUE, prob = editing_trespass_useful),
+  translation_trespass_useful = sample(1:5, n, replace = TRUE, prob = translation_trespass_useful),
+  summary_trespass_useful = sample(1:5, n, replace = TRUE, prob = summary_trespass_useful),
+  admin_trespass_useful = sample(1:5, n, replace = TRUE, prob = admin_trespass_useful),
+  impact_trespass_useful = sample(1:5, n, replace = TRUE, prob = impact_trespass_useful),
+  commercilisation_trespass_useful = sample(1:5, n, replace = TRUE, prob = commercilisation_trespass_useful),
+  other_trespass_useful = sample(1:5, n, replace = TRUE, prob = other_trespass_useful),
   #########
   benefits = sample(1:8, n, replace = TRUE, prob = probs_benefits),
   risks = sample(1:9, n, replace = TRUE, prob = probs_risk),
@@ -164,10 +304,10 @@ sim_data <- data.frame(
                     "non-binary",
                     "prefer to self-describe",
                     "prefer not to say"), n, replace = TRUE,
-                  prob = c(46.25, 46.25, 2.5, 2.5, 2.5))
+                  prob = c(46.25, 46.25, 2.5, 2.5, 2.5)),
+  experience = round(rnorm(n, mean = 7, sd = 3))
 )
 ```
-
 
 ```{r}
 lca <- sim_data %>% 
@@ -248,5 +388,70 @@ print(fit_table)
 
 ```
 
+```{r}
+best_model <- lca_3 # Update as needed
+sim_data$class <- best_model$predclass
 
-``
+sim_data %>% 
+  dplyr::select(class, where(is.numeric)) %>% 
+  group_by(class) %>% 
+  summarise(across(everything(),
+                   list(mean = ~mean(.x, na.rm = TRUE),
+                        sd = ~sd(.x, na.rm = TRUE)),
+                   .names = "{.col}_{.fn}")) %>% 
+  pivot_longer(-class,
+               names_to = c("variable", "stat"),
+               names_sep = "_(?=[^_]+$)") %>% 
+  pivot_wider(names_from = c(class, stat),
+              values_from = value)
+
+#### Can ignore variables where mean does not make sense, e.g, stages ######
+```
+
+
+```{r}
+kruskal_data <- sim_data %>% 
+  dplyr::select(!prim_field) %>% 
+  dplyr::select(!role) %>% 
+  dplyr::select(!gen_ai_tool) %>% 
+  dplyr::select(!stages) %>% 
+  dplyr::select(!use_3_month)
+
+kruskal_vars <- names(dplyr::select(kruskal_data, -class))
+
+kw_results <- kruskal_vars %>% 
+  set_names() %>% 
+  map(~kruskal.test(kruskal_data[[.x]] ~ kruskal_data$class)) %>% 
+  map_dfr(~data.frame(
+          chi_squared = round(.x$statistic, 3),
+          df = .x$parameter,
+          p_value = round(.x$p.value, 4)),
+.id = "variable") %>% 
+  mutate(
+    p_adjusted = p.adjust(p_value, method = "bonferroni"),
+    signficiant = p_value < 0.05,
+    significant_adjusted = p_adjusted < 0.05
+  )
+  
+
+sig_vars <- kw_results %>%
+  filter(significant_adjusted == TRUE) %>%
+  pull(variable)
+
+posthoc_results <- sig_vars %>%
+  set_names() %>%
+  map(~dunn.test(kruskal_data[[.x]],
+                 kruskal_data$class,
+                 method = "bonferroni"))
+```
+
+```{r}
+sim_data$class <- as.factor(sim_data$class)
+
+model <- multinom(class ~ role + prim_field + age + experience + gender, data = sim_data)
+
+summary(model)
+```
+
+
+\`\`
