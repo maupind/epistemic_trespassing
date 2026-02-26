@@ -1,0 +1,252 @@
+---
+title: "genai_healthcare_sim"
+format: html
+editor: visual
+---
+
+
+```{r}
+library(tidyverse)
+library(poLCA)
+library(dplyr)
+library(psych)
+library(gtools)
+```
+
+
+```{r}
+set.seed(123)
+n <- 280
+
+alpha_stages <- rep(0.5, 18)
+alpha_compare <- rep(0.5, 5)
+alpha_trespass <- rep(0.5, 3)
+alpha_benefits <- rep(0.5, 8)
+alpha_risk <- rep(0.5, 9)
+alpha_eleven <- rep(0.5, 11)
+
+probs_stages <- rdirichlet(1, alpha_stages)
+probs_stages_accuracy <- rdirichlet(1, alpha_stages)
+probs_stages_useful <- rdirichlet(1, alpha_stages)
+probs_mental <- rdirichlet(1, alpha_compare)
+probs_time <- rdirichlet(1, alpha_compare)
+probs_effort <- rdirichlet(1, alpha_compare)
+probs_stress <- rdirichlet(1, alpha_compare)
+probs_trespass <- rdirichlet(1, alpha_trespass)
+probs_trespass_stages <- rdirichlet(1, alpha_stages)
+probs_trespass_stages_accuracy <- rdirichlet(1, alpha_stages)
+probs_trespass_stages_useful <- rdirichlet(1, alpha_stages)
+probs_benefits <- rdirichlet(1, alpha_benefits)
+probs_risk <- rdirichlet(1, alpha_risk)
+
+probs_search <- rdirichlet(1, alpha_compare)
+probs_method_understand <- rdirichlet(1, alpha_compare)
+probs_method_implement <- rdirichlet(1, alpha_compare)
+probs_method_troubleshoot <- rdirichlet(1, alpha_compare)
+probs_search_likely <- rdirichlet(1, alpha_compare)
+probs_method_understand_likely <- rdirichlet(1, alpha_compare)
+probs_method_implement_likely <- rdirichlet(1, alpha_compare)
+probs_method_troubleshoot_likely <- rdirichlet(1, alpha_compare)
+
+probs_use_learn <- rdirichlet(1, alpha_compare)
+probs_use_brainstorm <- rdirichlet(1, alpha_compare) 
+probs_use_review <- rdirichlet(1, alpha_compare)
+probs_use_analysis <- rdirichlet(1, alpha_compare)
+probs_use_write <- rdirichlet(1, alpha_compare)
+probs_use_edit <- rdirichlet(1, alpha_compare)
+
+probs_use_learn_likely <- rdirichlet(1, alpha_compare)
+probs_use_brainstorm_likely <- rdirichlet(1, alpha_compare) 
+probs_use_review_likely <- rdirichlet(1, alpha_compare)
+probs_use_analysis_likely <- rdirichlet(1, alpha_compare)
+probs_use_write_likely <- rdirichlet(1, alpha_compare)
+probs_use_edit_likely <- rdirichlet(1, alpha_compare)
+
+probs_institution <- rdirichlet(1, alpha_trespass)
+probs_grant <- rdirichlet(1, alpha_compare)
+probs_grant_likely <- rdirichlet(1, alpha_compare)
+probs_grant_impact <- rdirichlet(1, alpha_compare)
+
+probs_disclosure <- rdirichlet(1, alpha_eleven)
+
+
+sim_data <- data.frame(
+  prim_field = sample(c("Clinical Medicine",
+                        "Biomedical Sciences",
+                        "Public Health/Epidemiology",
+                        "Health Services and Science Research",
+                        "Health Policy/Economics",
+                        "Health Psychology/Behavioural Sciences",
+                        "Health Informatics/Biostatistics/Health Data Sciences",
+                        "Other"), n, replace = TRUE,
+                      prob = c(12.5, 12.5, 12.5, 12.5, 12.5, 12.5, 12.5, 12.5)),
+  role = sample(c("Research assistant",
+                  "Technician and professional services",
+                  "Postgraduate/Doctoral Student/Medical Doctor Training",
+                  "Clinical Research",
+                  "Early Career",
+                  "Mid Career",
+                  "Senior",
+                  "Leadership"), n, replace = TRUE,
+                prob = c(12.5, 12.5, 12.5, 12.5, 12.5, 12.5, 12.5, 12.5)),
+  gen_ai_tool = sample(c("ChatGPT",
+                          "Claude",
+                          "Google Gemini",
+                          "Microsoft Copilot",
+                          "Grammarly",
+                          "Consensus",
+                          "Grok",
+                          "Perplexity",
+                          "Connected Papers",
+                          "Elicit",
+                          "Deepseek",
+                          "Other",
+                          "None"), n, replace = TRUE,
+                        prob = c(15, 15, 15, 15, 2.1, 2.1, 2.1, 2.1, 2.1, 2.1, 10, 2.1, 15)),
+  use_3_month = sample(c("Never",
+                         "Rarely",
+                         "Occassionally",
+                         "Sometimes",
+                         "Often",
+                         "Very often"), n, replace = TRUE,
+                       prob = c(20, 15, 12.5, 12.5, 20, 20)),
+  ############
+  stages = sample(1:18, n, replace = TRUE, prob = probs_stages),
+  stage_accuracy = sample(1:18, n, replace = TRUE, prob = probs_stages_accuracy),
+  stage_useful = sample(1:18, n, replace = TRUE, prob = probs_stages_useful),
+  ############
+  mental = sample(1:5, n, replace = TRUE, prob = probs_mental),
+  time = sample(1:5, n, replace = TRUE, prob = probs_time),
+  effort = sample(1:5, n, replace = TRUE, prob = probs_effort),
+  stress = sample(1:5, n, replace = TRUE, prob = probs_stress),
+  ###########
+  trespass = sample(1:3, n, replace = TRUE, prob = probs_trespass),
+  trespass_stages = sample(1:18, n, replace = TRUE, prob = probs_trespass_stages),
+  trespass_stage_accuracy = sample(1:18, n, replace = TRUE, prob = probs_trespass_stages_accuracy),
+  trespass_stage_useful = sample(1:18, n, replace = TRUE, prob = probs_trespass_stages_useful),
+  #########
+  benefits = sample(1:8, n, replace = TRUE, prob = probs_benefits),
+  risks = sample(1:9, n, replace = TRUE, prob = probs_risk),
+  #########
+  search = sample(1:5, n, replace = TRUE, prob = probs_search),
+  method_understand = sample(1:5, n, replace = TRUE, prob = probs_method_understand),
+  method_implement = sample(1:5, n, replace = TRUE, prob = probs_method_implement),
+  method_troubleshoot = sample(1:5, n, replace = TRUE, prob = probs_method_troubleshoot),
+  ###########
+  search_likely = sample(1:5, n, replace = TRUE, prob = probs_search_likely),
+  method_understand_likely = sample(1:5, n, replace = TRUE, prob = probs_method_understand_likely),
+  method_implement_likely = sample(1:5, n, replace = TRUE, prob = probs_method_implement_likely),
+  method_troubleshoot_likely = sample(1:5, n, replace = TRUE, prob = probs_method_troubleshoot_likely),
+  ################
+  use_learn = sample(1:5, n, replace = TRUE, prob = probs_use_learn),
+  use_brainstorm = sample(1:5, n, replace = TRUE, prob = probs_use_brainstorm),
+  use_review = sample(1:5, n, replace = TRUE, prob = probs_use_review),
+  use_analysis = sample(1:5, n, replace = TRUE, prob = probs_use_analysis),
+  use_write = sample(1:5, n, replace = TRUE, prob = probs_use_write),
+  use_edit = sample(1:5, n, replace = TRUE, prob = probs_use_edit),
+  #################
+  use_learn_likely = sample(1:5, n, replace = TRUE, prob = probs_use_learn_likely),
+  use_brainstorm_likely = sample(1:5, n, replace = TRUE, prob = probs_use_brainstorm_likely),
+  use_review_likely = sample(1:5, n, replace = TRUE, prob = probs_use_review_likely),
+  use_analysis_likely = sample(1:5, n, replace = TRUE, prob = probs_use_analysis_likely),
+  use_write_likely = sample(1:5, n, replace = TRUE, prob = probs_use_write_likely),
+  use_edit_likely = sample(1:5, n, replace = TRUE, prob = probs_use_edit_likely),
+    #################
+  institution = sample(1:3, n, replace = TRUE, prob = probs_institution),
+  #############
+  grant = sample(1:5, n, replace = TRUE, prob = probs_grant),
+  grant_likely = sample(1:5, n, replace = TRUE, prob = probs_grant_likely),
+  grant_impact = sample(1:5, n, replace = TRUE, prob = probs_grant_impact),
+  disclosure = sample(1:11, n, replace = TRUE, prob = probs_disclosure),
+  age = round(rnorm(n, mean = 33, sd = 12)),
+  gender = sample(c("female",
+                    "male",
+                    "non-binary",
+                    "prefer to self-describe",
+                    "prefer not to say"), n, replace = TRUE,
+                  prob = c(46.25, 46.25, 2.5, 2.5, 2.5))
+)
+```
+
+
+```{r}
+lca <- sim_data %>% 
+  dplyr::select(use_3_month,
+     stages,
+     benefits,
+     risks,
+      use_learn,
+      use_brainstorm,
+     use_review,
+      use_analysis,
+      use_write,
+      use_edit,
+      mental, 
+      time,
+      effort,
+     stress
+  ) %>%
+  mutate(
+    use_3_month = case_when(
+      use_3_month == "Never"      ~ 1L,
+      use_3_month == "Rarely"     ~ 2L,
+      use_3_month == "Occassionally" ~ 3L,
+      use_3_month == "Sometimes"  ~ 4L,
+      use_3_month == "Often"      ~ 5L,
+      use_3_month == "Very often" ~ 6L
+    ),
+    across(-use_3_month, as.integer)
+  )
+
+formula <- cbind(use_3_month,
+     stages,
+     benefits,
+     risks,
+      use_learn,
+      use_brainstorm,
+     use_review,
+      use_analysis,
+      use_write,
+      use_edit,
+      mental, 
+      time,
+      effort,
+     stress) ~ 1
+
+set.seed(123)
+
+lca_1 <- poLCA(formula, lca, nclass = 1, nrep = 10, maxiter = 3000, verbose = FALSE)
+lca_2 <- poLCA(formula, lca, nclass = 2, nrep = 10, maxiter = 3000, verbose = FALSE)
+lca_3 <- poLCA(formula, lca, nclass = 3, nrep = 10, maxiter = 3000, verbose = FALSE)
+lca_4 <- poLCA(formula, lca, nclass = 4, nrep = 10, maxiter = 3000, verbose = FALSE)
+lca_5 <- poLCA(formula, lca, nclass = 5, nrep = 10, maxiter = 3000, verbose = FALSE)
+
+fit_table <- data.frame(
+  classes   = 1:5,
+  AIC       = c(lca_1$aic, lca_2$aic, lca_3$aic, lca_4$aic, lca_5$aic),
+  BIC       = c(lca_1$bic, lca_2$bic, lca_3$bic, lca_4$bic, lca_5$bic),
+  log_lik   = c(lca_1$llik, lca_2$llik, lca_3$llik, lca_4$llik, lca_5$llik),
+  n_params  = c(lca_1$npar, lca_2$npar, lca_3$npar, lca_4$npar, lca_5$npar)
+)
+
+entropy <- function(model) {
+  probs <- model$posterior
+  n <- nrow(probs)
+  entropy_val <- 1 - (-sum(probs * log(probs + 1e-10))) / (n * log(ncol(probs)))
+  return(round(entropy_val, 3))
+}
+
+fit_table$entropy <- c(
+  NA, 
+  entropy(lca_2),
+  entropy(lca_3),
+  entropy(lca_4),
+  entropy(lca_5)
+)
+
+print(fit_table)
+
+```
+
+
+``
