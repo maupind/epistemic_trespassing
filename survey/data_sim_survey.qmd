@@ -415,7 +415,7 @@ sim_data %>%
 #### Code for tidySEM. Note in current version this is failing due to a possible
 #set.seed(123)
 #tidysem_lca <- mx_lca(data = lca, classes = 1:5)
-
+B
 #fit <- table_fit(tidysem_lca)
 #print(fit)
 
