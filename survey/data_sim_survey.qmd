@@ -355,11 +355,11 @@ formula <- cbind(use_3_month,
 
 set.seed(123)
 
-lca_1 <- poLCA(formula, lca, nclass = 1, nrep = 10, maxiter = 3000, verbose = FALSE)
-lca_2 <- poLCA(formula, lca, nclass = 2, nrep = 10, maxiter = 3000, verbose = FALSE)
-lca_3 <- poLCA(formula, lca, nclass = 3, nrep = 10, maxiter = 3000, verbose = FALSE)
-lca_4 <- poLCA(formula, lca, nclass = 4, nrep = 10, maxiter = 3000, verbose = FALSE)
-lca_5 <- poLCA(formula, lca, nclass = 5, nrep = 10, maxiter = 3000, verbose = FALSE)
+lca_1 <- poLCA(formula, lca, nclass = 1, nrep = 500, maxiter = 3000, verbose = FALSE)
+lca_2 <- poLCA(formula, lca, nclass = 2, nrep = 500, maxiter = 3000, verbose = FALSE)
+lca_3 <- poLCA(formula, lca, nclass = 3, nrep = 500, maxiter = 3000, verbose = FALSE)
+lca_4 <- poLCA(formula, lca, nclass = 4, nrep = 500, maxiter = 3000, verbose = FALSE)
+lca_5 <- poLCA(formula, lca, nclass = 5, nrep = 500, maxiter = 3000, verbose = FALSE)
 
 fit_table <- data.frame(
   classes   = 1:5,
@@ -405,7 +405,25 @@ sim_data %>%
   pivot_wider(names_from = c(class, stat),
               values_from = value)
 
-#### Can ignore variables where mean does not make sense, e.g, stages ######
+#### Can ignore variables where mean does not make sense including 
+
+######
+```
+
+
+```{r}
+#### Code for tidySEM. Note in current version this is failing due to a possible
+#set.seed(123)
+#tidysem_lca <- mx_lca(data = lca, classes = 1:5)
+B
+#fit <- table_fit(tidysem_lca)
+#print(fit)
+
+#best_model <- tidysem_lca[[3]] update acorrding to best fitting model
+#class_probs <- class_prob(best_model)
+#print(class_probs)
+
+#plot_lca(best_model)
 ```
 
 
